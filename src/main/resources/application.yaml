@@ -1,0 +1,31 @@
+server:
+  port: 8081
+spring:
+  datasource:
+    driverClassName: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://localhost:3306/Songs
+    username: ${name:root}
+    password: ${password:password}
+  jpa:
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.MySQL8Dialect
+        dll-auto: none
+    show-sql: true
+  sql:
+    init:
+      mode: always
+  servlet:
+    multipart:
+      max-file-size: 15MB
+      max-request-size: 15MB
+s3bucket:
+  name: songs-bucket
+  region: us-east-1
+  endpoint: ${host:http://localhost:4566/}
+rabbitmq:
+  queueName: downloaded
+  exchange: downloaded-exc
+  routingKey: downloaded-rKey
+messageService:
+  maxRetries: 3
