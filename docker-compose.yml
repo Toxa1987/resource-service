@@ -4,12 +4,85 @@ services:
 
   localstack:
     image: localstack/localstack:latest
+    container_name: localstack
     environment:
-      - AWS_DEFAULT_REGION=us-east-1
-      - EDGE_PORT=4566
-      - SERVICES=s3
+      AWS_DEFAULT_REGION: us-east-1
+      EDGE_PORT: 4566
+      SERVICES: s3
+      AWS_ACCESS_KEY_ID: "${AWS_ACCESS_KEY_ID}"
+      AWS_SECRET_ACCESS_KEY: "${AWS_SECRET_ACCESS_KEY}"
     ports:
       - '4566-4583:4566-4583'
     volumes:
       - "${TEMPDIR:-/tmp/localstack}:/tmp/localstack"
       - "/var/run/docker.sock:/var/run/docker.sock"
+  db:
+    image: mysql:8.0.28
+    restart: always
+    environment:
+      MYSQL_DATABASE: 'Songs'
+      MYSQL_ROOT_PASSWORD: "${MYSQL_ROOT_PASSWORD}"
+    ports:
+      - 3306:3306
+
+  adminer:
+    image: adminer
+    restart: always
+    ports:
+      - 3080:8080
+
+  rabbitmq:
+    image: rabbitmq:3-management-alpine
+    container_name: 'rabbitmq'
+    ports:
+      - 5672:5672
+      - 15672:15672
+    volumes:
+      - ~/.docker-conf/rabbitmq/data/:/var/lib/rabbitmq/
+      - ~/.docker-conf/rabbitmq/log/:/var/log/rabbitmq
+
+  res-service:
+    depends_on:
+      - db
+      - rabbitmq
+      - localstack
+    container_name: resource-service
+    build:
+      context: .
+    restart: always
+    environment:
+      DB_HOST: db
+      AWS_HOST: localstack
+      RABBITMQ_HOST: rabbitmq
+    ports:
+      - 8081:8081
+    volumes:
+      - ~/.aws/:/root/.aws:ro
+
+  res-processor:
+    depends_on:
+      - db
+      - rabbitmq
+      - res-service
+      - song-service
+    container_name: resource-processor
+    build:
+      context: ../resource-processor/
+    restart: always
+    environment:
+      DB_HOST: db
+      RS_HOST: res-service
+      SS_HOST: song-service
+      RABBITMQ_HOST: rabbitmq
+
+  song-service:
+    depends_on:
+      - db
+    container_name: song-service
+    build:
+      context: ../song-service/
+    restart: always
+    environment:
+      DB_HOST: db
+    ports:
+      - 8082:8082

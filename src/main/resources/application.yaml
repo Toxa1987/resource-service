@@ -3,7 +3,7 @@ server:
 spring:
   datasource:
     driverClassName: com.mysql.cj.jdbc.Driver
-    url: jdbc:mysql://localhost:3306/Songs
+    url: jdbc:mysql://${DB_HOST:localhost}:3306/Songs
     username: ${name:root}
     password: ${password:password}
   jpa:
@@ -19,10 +19,12 @@ spring:
     multipart:
       max-file-size: 15MB
       max-request-size: 15MB
+  rabbitmq:
+    host: ${RABBITMQ_HOST:localhost}
 s3bucket:
   name: songs-bucket
   region: us-east-1
-  endpoint: ${host:http://localhost:4566/}
+  endpoint: http://${AWS_HOST:localhost}:4566/
 rabbitmq:
   queueName: downloaded
   exchange: downloaded-exc

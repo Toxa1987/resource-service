@@ -3,6 +3,7 @@ package com.epam.esm.resourceservice.service;
 import java.io.InputStream;
 import java.net.URL;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
@@ -13,6 +14,7 @@ import com.epam.esm.resourceservice.exception.S3BucketNotExist;
 import com.epam.esm.resourceservice.exception.S3ObjectNotFoundException;
 
 @Service
+@Slf4j
 public class S3Service {
     private final AmazonS3 amazonS3;
     private final FileService fileService;
@@ -49,7 +51,11 @@ public class S3Service {
 
     private void checkBucket() {
         if (!amazonS3.doesBucketExistV2(bucketName)) {
-            throw new S3BucketNotExist("S3 bucket doesn't exist");
+            log.error(String.format("S3 bucket %s doesn't exist",bucketName));
+            log.info(String.format("Creating bucket %s",bucketName));
+            amazonS3.createBucket(bucketName);
+            log.info(String.format("Bucket with name %s created",bucketName));
+
         }
     }
 

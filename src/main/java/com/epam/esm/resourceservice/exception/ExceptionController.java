@@ -26,7 +26,7 @@ public class ExceptionController {
 
     @ExceptionHandler(value = {S3BucketNotExist.class})
     public ResponseEntity<ApiExceptionResponse> getS3BucketNotExistData(S3BucketNotExist exception) {
-        return new ResponseEntity<>(getResponseEntity(exception), HttpStatus.NO_CONTENT);
+        return new ResponseEntity<>(getResponseEntity(exception), HttpStatus.NOT_FOUND);
     }
 
     @ExceptionHandler(value = {S3ObjectNotFoundException.class})
