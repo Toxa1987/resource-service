@@ -31,6 +31,14 @@ services:
     ports:
       - 3080:8080
 
+  eureka:
+    build:
+      context: ../eureka-server/
+    container_name: eureka
+    restart: always
+    ports:
+      - 8761:8761
+
   rabbitmq:
     image: rabbitmq:3-management-alpine
     container_name: 'rabbitmq'
@@ -41,11 +49,24 @@ services:
       - ~/.docker-conf/rabbitmq/data/:/var/lib/rabbitmq/
       - ~/.docker-conf/rabbitmq/log/:/var/log/rabbitmq
 
-  res-service:
+  gateway:
+    depends_on:
+      - eureka
+    container_name: gateway
+    build:
+      context: ../resource-gateway/
+    restart: always
+    environment:
+      EUREKA_HOST: eureka
+    ports:
+      - 8080:8080
+
+  resource-service:
     depends_on:
       - db
       - rabbitmq
       - localstack
+      - eureka
     container_name: resource-service
     build:
       context: .
@@ -54,35 +75,35 @@ services:
       DB_HOST: db
       AWS_HOST: localstack
       RABBITMQ_HOST: rabbitmq
-    ports:
-      - 8081:8081
+      EUREKA_HOST: eureka
     volumes:
       - ~/.aws/:/root/.aws:ro
 
-  res-processor:
+  resource-processor:
     depends_on:
       - db
       - rabbitmq
-      - res-service
+      - resource-service
       - song-service
+      - eureka
     container_name: resource-processor
     build:
       context: ../resource-processor/
     restart: always
     environment:
       DB_HOST: db
-      RS_HOST: res-service
-      SS_HOST: song-service
+      GATEWAY_HOST: gateway
       RABBITMQ_HOST: rabbitmq
+      EUREKA_HOST: eureka
 
   song-service:
     depends_on:
       - db
+      - eureka
     container_name: song-service
     build:
       context: ../song-service/
     restart: always
     environment:
       DB_HOST: db
-    ports:
-      - 8082:8082
+      EUREKA_HOST: eureka
