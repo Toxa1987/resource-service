@@ -19,16 +19,13 @@ public class S3Service {
     private final AmazonS3 amazonS3;
     private final FileService fileService;
 
-    @Value("${s3bucket.name}")
-    private String bucketName;
-
     public S3Service(AmazonS3 amazonS3, FileService fileService) {
         this.amazonS3 = amazonS3;
         this.fileService = fileService;
     }
 
-    public URL saveFile(InputStream file, String fileName) {
-        checkBucket();
+    public URL saveFile(InputStream file, String fileName, String bucketName) {
+        checkBucket(bucketName);
         ObjectMetadata objectMetadata = new ObjectMetadata();
         objectMetadata.addUserMetadata("Name", fileName);
         objectMetadata.setContentType("audio/mpeg");
@@ -36,30 +33,27 @@ public class S3Service {
         return amazonS3.getUrl(bucketName, fileName);
     }
 
-    public byte[] downloadFile(String fileName) {
-        checkBucket();
-        checkObjectExits(fileName);
+    public byte[] downloadFile(String fileName, String bucketName) {
+        checkBucket(bucketName);
+        checkObjectExits(fileName,bucketName);
         S3Object s3Object = amazonS3.getObject(bucketName, fileName);
         return fileService.readBytes(s3Object);
     }
 
-    public void deleteFile(String fileName) {
-        checkBucket();
-        checkObjectExits(fileName);
+    public void deleteFile(String fileName, String bucketName) {
+        checkBucket(bucketName);
+        checkObjectExits(fileName,bucketName);
         amazonS3.deleteObject(bucketName, fileName);
     }
 
-    private void checkBucket() {
+    private void checkBucket(String bucketName) {
         if (!amazonS3.doesBucketExistV2(bucketName)) {
             log.error(String.format("S3 bucket %s doesn't exist",bucketName));
-            log.info(String.format("Creating bucket %s",bucketName));
-            amazonS3.createBucket(bucketName);
-            log.info(String.format("Bucket with name %s created",bucketName));
-
+            throw new S3BucketNotExist(String.format("S3 bucket %s doesn't exist",bucketName));
         }
     }
 
-    private void checkObjectExits(String objectName) {
+    private void checkObjectExits(String objectName, String bucketName) {
         if (!amazonS3.doesObjectExist(bucketName, objectName)) {
             throw new S3ObjectNotFoundException("File not found");
         }

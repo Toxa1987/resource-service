@@ -6,8 +6,10 @@ import java.util.List;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
 
+import com.epam.esm.resourceservice.dto.SaveSongDto;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.ui.Model;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.validation.annotation.Validated;
@@ -29,8 +31,8 @@ public class SongsStoreController {
     }
 
     @PostMapping()
-    public ResponseEntity<SaveResponse>saveSong(@NotNull MultipartFile file){
-        return new ResponseEntity<>( mp3Service.saveSong(file), HttpStatus.OK);
+    public ResponseEntity<SaveResponse>saveSong(@ModelAttribute SaveSongDto saveSongDto){
+        return new ResponseEntity<>( mp3Service.saveSong(saveSongDto), HttpStatus.OK);
      }
     @GetMapping("/{id}")
     public ResponseEntity<byte[]> getSong(

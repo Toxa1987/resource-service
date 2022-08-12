@@ -1,11 +1,8 @@
 package com.epam.esm.resourceservice.integration;
 
-import com.amazonaws.services.s3.AmazonS3;
-import com.amazonaws.services.s3.AmazonS3ClientBuilder;
-import org.springframework.util.ResourceUtils;
 import org.testcontainers.containers.localstack.LocalStackContainer;
 
-import java.io.FileNotFoundException;
+import java.io.IOException;
 
 import static org.testcontainers.containers.localstack.LocalStackContainer.Service.S3;
 
@@ -18,13 +15,15 @@ public final class S3ContainerHelper {
     public static LocalStackContainer construct() {
         LocalStackContainer s3Container = new LocalStackContainer().withServices(S3);
         s3Container.start();
+        System.setProperty("aws.accessKeyId", s3Container.getDefaultCredentialsProvider().getCredentials().getAWSAccessKeyId());
+        System.setProperty("aws.secretKey", s3Container.getDefaultCredentialsProvider().getCredentials().getAWSSecretKey());
         System.setProperty("s3bucket.endpoint", s3Container.getEndpointConfiguration(S3).getServiceEndpoint());
-        AmazonS3 s3 = AmazonS3ClientBuilder
-                .standard()
-                .withEndpointConfiguration(s3Container.getEndpointConfiguration(S3))
-                .withCredentials(s3Container.getDefaultCredentialsProvider())
-                .build();
-        s3.createBucket("songs-bucket");
+        System.setProperty("s3bucket.region", s3Container.getEndpointConfiguration(S3).getSigningRegion());
+        try {
+            s3Container.execInContainer("awslocal", "s3", "mb", "s3://" + "songsbucket");
+        } catch (IOException | InterruptedException e) {
+            throw new RuntimeException(e);
+        }
         return s3Container;
     }
 }

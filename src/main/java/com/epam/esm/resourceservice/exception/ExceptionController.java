@@ -53,6 +53,11 @@ public class ExceptionController {
     public ResponseEntity<ApiExceptionResponse> getBrokerUnavailableException(BrokerUnavailableException exception) {
         return new ResponseEntity<>(getResponseEntity(exception), HttpStatus.INTERNAL_SERVER_ERROR);
     }
+    @ExceptionHandler(value = {RuntimeException.class})
+    public ResponseEntity<ApiExceptionResponse> getExceptionData(RuntimeException exception) {
+        return new ResponseEntity<>(getResponseEntity(exception), HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
 
     private ApiExceptionResponse getResponseEntity(Exception exception) {
         return ApiExceptionResponse.builder()

@@ -28,9 +28,10 @@ spring:
       ribbon:
         enabled: false
 s3bucket:
-  name: songs-bucket
   region: us-east-1
   endpoint: http://${AWS_HOST:localhost}:4566/
+storage-service:
+  endpointHost: http://${GATEWAY_HOST:gateway}/sts/
 eureka:
   client:
     serviceUrl:

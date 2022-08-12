@@ -28,7 +28,7 @@ import static org.testcontainers.containers.localstack.LocalStackContainer.Servi
 @SpringBootTest
 @DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_CLASS)
 public class S3Test {
-    private static final String S3_BUCKET_NAME = "songs-bucket";
+    private static final String S3_BUCKET_NAME = "songsbucket";
     @Container
     static LocalStackContainer container = S3ContainerHelper.construct();
     @Autowired
@@ -39,7 +39,7 @@ public class S3Test {
         String host = container.getEndpointConfiguration(S3).getServiceEndpoint();
         String expected = host + "/" + S3_BUCKET_NAME + "/file.mp3";
         File file = ResourceUtils.getFile("classpath:file.mp3");
-        URL url = s3Service.saveFile(new FileInputStream(file), file.getName());
+        URL url = s3Service.saveFile(new FileInputStream(file), file.getName(),S3_BUCKET_NAME);
         Assertions.assertNotNull(url);
         Assertions.assertEquals(expected, url.toString());
     }
@@ -48,21 +48,21 @@ public class S3Test {
     void DownloadExistFile_ShouldReturnByteArray() throws IOException {
         File file = ResourceUtils.getFile("classpath:file.mp3");
         byte[] expected = new FileInputStream(file).readAllBytes();
-        byte[] actual = s3Service.downloadFile("file.mp3");
+        byte[] actual = s3Service.downloadFile("file.mp3",S3_BUCKET_NAME);
         Assertions.assertArrayEquals(actual, expected);
     }
 
     @Test
     void DownloadFile_ShouldThrowException() throws IOException {
-        Assertions.assertThrows(S3ObjectNotFoundException.class, () -> s3Service.downloadFile("missed.mp3"));
+        Assertions.assertThrows(S3ObjectNotFoundException.class, () -> s3Service.downloadFile("missed.mp3",S3_BUCKET_NAME));
     }
 
     @Test
     void DeleteExistFile_ShouldExecuteWithoutException() {
-        s3Service.deleteFile("file.mp3");
+        s3Service.deleteFile("file.mp3",S3_BUCKET_NAME);
     }
     @Test
     void DeleteFile_ShouldThrowException() {
-        Assertions.assertThrows(S3ObjectNotFoundException.class, () -> s3Service.deleteFile("missed.mp3"));
+        Assertions.assertThrows(S3ObjectNotFoundException.class, () -> s3Service.deleteFile("missed.mp3",S3_BUCKET_NAME));
     }
 }

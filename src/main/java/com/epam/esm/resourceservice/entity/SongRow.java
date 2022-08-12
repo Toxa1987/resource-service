@@ -22,9 +22,11 @@ public class SongRow {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id")
-    long id;
+    private long id;
     @Column(name = "song_file_name")
-    String songFileName;
+    private String songFileName;
     @Column(name = "location")
-    String location;
+    private String location;
+    @Column(name = "storage_id")
+    private long storageId;
 }
