@@ -12,6 +12,7 @@ import javax.transaction.Transactional;
 
 import com.epam.esm.resourceservice.dto.SaveSongDto;
 import com.epam.esm.resourceservice.dto.StorageDto;
+import com.epam.esm.resourceservice.entity.Message;
 import com.epam.esm.resourceservice.entity.SaveResponse;
 import com.epam.esm.resourceservice.entity.StorageType;
 import com.epam.esm.resourceservice.exception.S3BucketNotExist;
@@ -62,7 +63,7 @@ public class Mp3Service {
     }
 
     @Transactional
-    public SaveResponse saveSong(SaveSongDto saveSongDto) {
+    public SaveResponse saveSong(SaveSongDto saveSongDto, String traceId) {
         MultipartFile file = saveSongDto.getFile();
         long resourceId = saveSongDto.getResourceId();
         long storageId = saveSongDto.getStorageId();
@@ -91,7 +92,11 @@ public class Mp3Service {
                     .build();
             songsRowRepository.save(row);
             SaveResponse sr = new SaveResponse(row.getId());
-            messageService.send(sr);
+            Message message = Message.builder()
+                    .id(row.getId())
+                    .traceId(traceId)
+                    .build();
+            messageService.send(message);
             return sr;
         }
     }
@@ -151,7 +156,8 @@ public class Mp3Service {
         ResponseEntity<StorageDto[]> storageDtos = Try.ofSupplier(circuitBreaker.decorateSupplier(responseEntitySupplier))
                 .recover(throwable -> {
                     log.error("Storage service unavailable, returned cashed result");
-                    return savedEntity;})
+                    return savedEntity;
+                })
                 .get();
         saveResponseEntity(storageDtos);
         return Arrays.stream(storageDtos.getBody())

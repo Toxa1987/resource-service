@@ -84,7 +84,7 @@ public class Mp3ServiceTest {
         SaveSongDto songDto = SaveSongDto.builder()
                 .file(multipartFile)
                 .build();
-        SaveResponse actual = mp3Service.saveSong(songDto);
+        SaveResponse actual = mp3Service.saveSong(songDto,"");
         //Then
         Assertions.assertEquals(actual, expected);
     }

@@ -3,6 +3,7 @@ package com.epam.esm.resourceservice;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.web.client.RestTemplateBuilder;
+import org.springframework.boot.web.servlet.ServletComponentScan;
 import org.springframework.cloud.client.loadbalancer.LoadBalanced;
 import org.springframework.cloud.netflix.eureka.EnableEurekaClient;
 import org.springframework.context.annotation.Bean;
@@ -15,6 +16,7 @@ import java.time.Duration;
 @SpringBootApplication
 @EnableRetry
 @EnableEurekaClient
+@ServletComponentScan
 public class ResourceServiceApplication {
 
     public static void main(String[] args) {

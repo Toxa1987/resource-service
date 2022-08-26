@@ -1,6 +1,10 @@
 package com.epam.esm.resourceservice.service;
 
+import com.epam.esm.resourceservice.entity.Message;
 import com.epam.esm.resourceservice.entity.SaveResponse;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.core.AmqpTemplate;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
@@ -25,10 +29,11 @@ public class MessageService {
     private String routingKey;
 
     @Retryable(maxAttemptsExpression = "${messageService.maxRetries}", value = RuntimeException.class, backoff = @Backoff(1000))
-    public boolean send(SaveResponse saveResponse) {
-        log.info(String.format("Sending message to the queue with data: %s", saveResponse));
-        rabbitTemplate.convertAndSend(exchange, routingKey, saveResponse);
-        log.info("Successfully sent message with data: " + saveResponse);
+    public boolean send(Message message) {
+
+        log.info(String.format("Sending message to the queue with data: %s", message));
+        rabbitTemplate.convertAndSend(exchange, routingKey, message);
+        log.info("Successfully sent message with data: " + message);
         return true;
     }
 

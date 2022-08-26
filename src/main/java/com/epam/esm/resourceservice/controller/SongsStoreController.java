@@ -31,19 +31,26 @@ public class SongsStoreController {
     }
 
     @PostMapping()
-    public ResponseEntity<SaveResponse>saveSong(@ModelAttribute SaveSongDto saveSongDto){
-        return new ResponseEntity<>( mp3Service.saveSong(saveSongDto), HttpStatus.OK);
-     }
+    public ResponseEntity<SaveResponse> saveSong(@RequestHeader(name = "traceId", required = false) String traceId,
+                                                 @SessionAttribute(name = "traceId", required = false) String sessionTraceId,
+                                                 @ModelAttribute SaveSongDto saveSongDto) {
+        if (traceId == null) {
+            traceId = sessionTraceId;
+        }
+        return new ResponseEntity<>(mp3Service.saveSong(saveSongDto, traceId), HttpStatus.OK);
+    }
+
     @GetMapping("/{id}")
     public ResponseEntity<byte[]> getSong(
-            @PathVariable  @ NotNull @Min( value = 1 , message = "Id value should be 1 or more") long id){
-        MultiValueMap<String,String> headers = new LinkedMultiValueMap<>();
+            @PathVariable @NotNull @Min(value = 1, message = "Id value should be 1 or more") long id) {
+        MultiValueMap<String, String> headers = new LinkedMultiValueMap<>();
         headers.put("Content-Type", List.of("audio/mpeg"));
-        return new ResponseEntity<>(mp3Service.getSong(id),headers, HttpStatus.OK);
+        return new ResponseEntity<>(mp3Service.getSong(id), headers, HttpStatus.OK);
     }
+
     @DeleteMapping()
     public ResponseEntity<DeleteResponse> deleteSongs(
-            @RequestParam @NotNull long[] id ){
-        return new ResponseEntity<>( new DeleteResponse(mp3Service.deleteSongs(id)),HttpStatus.OK);
+            @RequestParam @NotNull long[] id) {
+        return new ResponseEntity<>(new DeleteResponse(mp3Service.deleteSongs(id)), HttpStatus.OK);
     }
 }
